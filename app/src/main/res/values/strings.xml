@@ -1,3 +1,6 @@
 <resources>
     <string name="app_name">NativeDemo</string>
+    <string name="jni_get_params">获取JNI数据</string>
+    <string name="jni_set_params">传递数据到JNI</string>
+    <string name="jni_set_callback">设置回调</string>
 </resources>

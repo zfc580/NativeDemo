@@ -22,25 +22,57 @@ static const char *kClassName = "com/choufucai/nativedemo/MainActivity";
 
 
 static jstring JNICALL stringFromJNI(JNIEnv *env, jobject obj) {
-    std::string hello = "Hello world C++";
+    char* hello = (char *) "Hello world C++";
+    jstring result = env->NewStringUTF(hello);
+    return result;
+}
 
-    jstring result = env->NewStringUTF(hello.c_str());
+static jint JNICALL plus(JNIEnv *env, jobject obj, jint x, jint y){
+    jint result = x + y;
+    return result;
+}
+
+/**
+ * 从Java层传递对象参数到Jni层，获取对象值每个成员变量值
+ * @param env
+ * @param obj
+ * @param jBean 传递的参数(除了String,Class,Throwable,其他对象都用jobject表示)
+ */
+static void JNICALL setParams(JNIEnv *env, jobject obj, jobject jBean){
+
+    jclass beanClass = env->FindClass("com/choufucai/nativedemo/Bean");
+    jfieldID idField = env->GetFieldID(beanClass, "id", "I");
+    jfieldID nameField = env->GetFieldID(beanClass, "name", "Ljava/lang/String;");
+    jint beanId = env->GetIntField(jBean, idField);
+    jstring name = (jstring)env->GetObjectField(jBean, nameField);
+    jboolean isCopy; //C++声明变量即已初始化并附上地址
+    const char* nameChar = env->GetStringUTFChars(name, &isCopy);
+    unsigned char b = isCopy;
+    //如果直接打印name的值会出问题：Fatal signal 11 (SIGSEGV), code 1, fault addr 0x85， Cause: null pointer dereference
+    LOGI("JNI setParams beanId =:%d, name = %s, isCopy = %1u\n", beanId, nameChar, b);
+    //释放地址
+    env->ReleaseStringUTFChars(name, nameChar);
+}
+
+static void JNICALL setJniCallback(JNIEnv *env, jobject obj, jobject jcallback){
+
+    const char* resultStr = "Callback Success. ";
     const char *methodName = "onJniCalled";
-    const char *className = "com/choufucai/nativedemo/MainActivity";
+    const char *className = "com/choufucai/nativedemo/JniCallback";
     jclass localClass = env->FindClass(className);
     jmethodID jmethodID = env->GetMethodID(localClass, methodName, "(Ljava/lang/String;)V");
+    jstring result = env->NewStringUTF(resultStr);
     //通过jni调用java函数，传进去的参数result必须是jni的类型，如jstring,否则报“use of invalid jobject“错误
-    env->CallVoidMethod(obj, jmethodID, result);
-
-    return (env)->NewStringUTF(hello.c_str());
+    env->CallVoidMethod(jcallback, jmethodID, result);
 }
 
 
 static const JNINativeMethod gMethods[] = {
         {"stringFromJNI", "()Ljava/lang/String;", (jstring *) stringFromJNI},
+        {"plus", "(II)I", (jint *)plus},
+        {"setParams", "(Lcom/choufucai/nativedemo/Bean;)V", (void *)setParams},
+        {"setJniCallback", "(Lcom/choufucai/nativedemo/JniCallback;)V", (void *)setJniCallback}
 };
-
-
 
 
 JNIEXPORT jint JNICALL JNI_OnLoad(JavaVM *vm, void *reserved) {
@@ -52,14 +84,14 @@ JNIEXPORT jint JNICALL JNI_OnLoad(JavaVM *vm, void *reserved) {
     }
     myClass = env->FindClass(kClassName);
     if (myClass == NULL) {
-        LOGI("cannot get class:%s\n", kClassName);
+        LOGI("JNI cannot get class:%s\n", kClassName);
         return -1;
     }
     if (env->RegisterNatives(myClass, gMethods, sizeof(gMethods) / sizeof(gMethods[0])) < 0) {
-        LOGI("register native method failed!\n");
+        LOGI("JNI register native method failed!\n");
         return -1;
     }
-    LOGI("JNI_OnLoad called.");
+    LOGI("JNI JNI_OnLoad called.");
 
     return JNI_VERSION_1_4; //这里很重要，必须返回版本，否则加载会失败。
 }

@@ -12,6 +12,7 @@ android {
         externalNativeBuild {
             cmake {
                 cppFlags ""
+                arguments "-DANDROID_CPP_FEATURES=rtti exceptions"
             }
         }
     }
@@ -22,6 +23,7 @@ android {
         }
     }
     externalNativeBuild {
+        // Use this block to link Gradle to your CMake build script.
         cmake {
             path "CMakeLists.txt"
         }
