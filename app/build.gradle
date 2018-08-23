@@ -12,7 +12,6 @@ android {
         externalNativeBuild {
             cmake {
                 cppFlags ""
-                arguments "-DANDROID_CPP_FEATURES=rtti exceptions"
                 abiFilters 'x86', 'x86_64', 'armeabi', 'armeabi-v7a',
                         'arm64-v8a'
             }

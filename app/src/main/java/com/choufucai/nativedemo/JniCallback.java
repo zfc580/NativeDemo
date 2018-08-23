@@ -7,4 +7,5 @@ package com.choufucai.nativedemo;
  */
 public interface JniCallback {
     void onJniCalled(String str);
+    String onStrCalled();
 }

@@ -31,7 +31,7 @@ public class MainActivity extends AppCompatActivity {
         mGetBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                mTextView.setText(stringFromJNI());
+                mTextView.setText(stringFromJNI("你好"));
             }
         });
 
@@ -53,6 +53,12 @@ public class MainActivity extends AppCompatActivity {
                     public void onJniCalled(String str) {
                         //从Jni调回Java的函数
                         Log.i("MainActivity", "onJniCalled str = "+str);
+
+                    }
+
+                    @Override
+                    public String onStrCalled() {
+                        return "Callback return Success";
                     }
                 });
             }
@@ -63,7 +69,7 @@ public class MainActivity extends AppCompatActivity {
      * A native method that is implemented by the 'native-lib' native library,
      * which is packaged with this application.
      */
-    public native String stringFromJNI();
+    public native String stringFromJNI(String string);
     public native int plus(int x, int y);
     public native void setParams(Bean bean);
     public native void setJniCallback(JniCallback callback);
